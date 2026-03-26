@@ -14,6 +14,7 @@ def main():
     app.add_handler(CommandHandler("dolar", dolar)) 
     app.add_handler(CommandHandler("ultimos", ultimos)) 
     app.add_handler(CommandHandler("gasto", gasto)) 
+    app.add_handler(CommandHandler("foto", foto)) 
     print("Bot iniciado...")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 

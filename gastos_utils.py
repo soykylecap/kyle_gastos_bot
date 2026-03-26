@@ -7,6 +7,10 @@ import logging
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+from pathlib import Path
+from PIL import Image
+import io
+
 
 # ─── CONFIGURACIÓN ───────────────────────────────────────────────
 load_dotenv()
@@ -17,6 +21,7 @@ EXCEL_PATH = os.getenv("EXCEL_PATH")
 EXCEL_PAGOS = os.getenv("EXCEL_PAGOS")
 CANTIDAD_ULTIMOS_MOVIMIENTOS = int(os.getenv("CANTIDAD_ULTIMOS_MOVIMIENTOS"))
 RUBROS = os.getenv("RUBROS").split(", ")
+FOTOS = os.getenv("FOTOS")
 
 # ─────────────────────────────────────────────────────────────────
 
@@ -186,6 +191,27 @@ async def ultimos(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def gasto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     autor = update.message.from_user.first_name
     await update.message.reply_text(f"¡Hola {autor}! Ingresa el detalle y el monto (ej: Tornillos Rothoblaas 130.000)")
+
+
+async def foto(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    autor = update.message.from_user.first_name
+    chat_id = update.message.chat_id
+    await update.message.reply_text(f"{autor}, veamos cuanto avanzamos...")
+    carpeta = Path(FOTOS)
+    foto_reciente = max(carpeta.iterdir(), key=lambda f: f.stat().st_mtime)
+
+    # Abrir y redimensionar
+    foto = Image.open(foto_reciente)
+    foto.thumbnail((1280, 1280))  # mantiene proporción, máximo 1280px en cualquier lado
+
+    # Guardar en memoria (sin escribir al disco)
+    buffer = io.BytesIO()
+    foto.save(buffer, format="JPEG", quality=60)  # quality: 1-95, menor = más comprimido
+    buffer.seek(0)
+
+
+
+    await context.bot.send_photo(chat_id=chat_id, photo=buffer)
 
 
 async def manejar_mensaje(update: Update, context: ContextTypes.DEFAULT_TYPE):
